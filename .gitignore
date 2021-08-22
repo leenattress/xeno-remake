@@ -1,0 +1,6 @@
+# ROM build folder
+out
+
+# Keep the zip, ditch the exe and config files
+scripts/emulator/*
+!scripts/emulator/gens.zip

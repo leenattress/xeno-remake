@@ -1,0 +1,73 @@
+{
+    "version": "2.0.0",
+    "windows": {
+        "options": {
+            "shell": {
+                "executable": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+                "args": [
+                    "-NoProfile",
+                    "-ExecutionPolicy",
+                    "Bypass",
+                    "-Command"
+                ]
+            }
+        }
+    },
+    "linux": {
+        "options": {
+            "shell": {
+                "executable": "/usr/bin/pwsh",
+                "args": [
+                    "-NoProfile",
+                    "-Command"
+                ]
+            }
+        }
+    },
+    "osx": {
+        "options": {
+            "shell": {
+                "executable": "/usr/local/bin/pwsh",
+                "args": [
+                    "-NoProfile",
+                    "-Command"
+                ]
+            }
+        }
+    },
+    "tasks": [
+        {
+            "label": "Clean",
+            "type": "shell",
+            "command": "./scripts/clean.ps1"
+        },
+        {
+            "label": "Build",
+            "type": "shell",
+            "command": "./scripts/build.ps1",
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "Run",
+            "type": "shell",
+            "command": "./scripts/run.ps1"
+        },
+        {
+            "label": "Clean Build and Run",
+            "type": "shell",
+            "command": "./scripts/build-run.ps1",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Prepare",
+            "type": "shell",
+            "command": "./scripts/prepare.ps1",
+            "problemMatcher": []
+        }
+    ]
+}
