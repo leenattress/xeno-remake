@@ -1,5 +1,5 @@
 # Untitled Megadrive Game
-> This is a build pipeline for Sega Megadrive/Genesis games. The output of the demo is 'sonic' from the SGDK samples folder. We build a docker iamge to compile the ROM, docker is a requirement, not a suggestion.
+> This is a build pipeline for Sega Megadrive/Genesis games. The output of the demo is 'sonic' from the SGDK samples folder. We build a docker image to compile the ROM, docker is a requirement, not a suggestion.
 
 Any example code used here (Sonic sprites and test music for example) is for learning purposes, no copyright infringement intended.
 
