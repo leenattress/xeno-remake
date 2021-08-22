@@ -5,7 +5,9 @@ $gensExe = "./scripts/emulator/gens.exe"
 if (Test-Path -Path $gensZip -PathType Leaf) {
     if (-not (Test-Path -Path $gensExe -PathType Leaf)) {
         Expand-Archive -Path $gensZip -DestinationPath scripts/emulator -Force
-    }   
+    } else {
+        Write-Host "Emulator is present" -foregroundcolor yellow
+    }
 } else {
     throw "Gens emulator '$gensZip' zip not found"
 }
