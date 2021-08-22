@@ -1,8 +1,11 @@
 # unpack emulator if needed
 $gensZip = "./scripts/emulator/gens.zip"
+$gensExe = "./scripts/emulator/gens.exe"
 
 if (Test-Path -Path $gensZip -PathType Leaf) {
-    Expand-Archive -Path $gensZip -DestinationPath scripts/emulator -Force
+    if (-not (Test-Path -Path $gensExe -PathType Leaf)) {
+        Expand-Archive -Path $gensZip -DestinationPath scripts/emulator -Force
+    }   
 } else {
     throw "Gens emulator '$gensZip' zip not found"
 }
