@@ -38,3 +38,5 @@ else {
     }
 }
 Write-Host "Preperation complete!" -foregroundcolor green
+
+exit

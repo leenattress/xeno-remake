@@ -13,3 +13,5 @@ Get-Process | Where-Object {$_.Path -like '*gens.exe*'} | Stop-Process -Force -p
 
 Gens $romPath
 Write-Host "Running!" -foregroundcolor green
+
+exit

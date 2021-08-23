@@ -4,3 +4,5 @@ if (test-path $file) {
     Remove-Item -path $file -recurse | Out-Null
 }
 Write-Host "Clean up complete!" -foregroundcolor green
+
+exit
