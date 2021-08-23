@@ -19,39 +19,33 @@ jobs:
   # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest 
+    runs-on: windows-2019
+
+    # environment variables
+    env:
+        RepositoryUrl: 'https://github.com/${{ github.repository }}'
+        RepositoryBranch: '${{ github.ref }}'
+        SourceRevisionId: '${{ github.sha }}'
+        Configuration: Release      
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+      
+      # Prepare
+      - name: Fetch SGDK
+        run: git clone https://github.com/Stephane-D/SGDK.git
 
-      - uses: addnab/docker-run-action@v3
-        with:
-          image: maciekbaron/sgdk:latest
-          options: --rm -v ${{ github.workspace }}:/src
-          run: |
-            make -f $GENDEV/sgdk/mkfiles/makefile.gen clean all 
+      - name: Create SGDK docker image
+        run: docker build -t sgdk .
+        working-directory: ./SGDK
+      
+      - name: Build
+        run: docker run --rm -v ${pwd}:/src sgdk       
 
       - name: ROM for Artifact
         uses: actions/upload-artifact@v2
         with:
          path: ${{ github.workspace }}\out\rom.bin
          name: ROM-${{ github.run_number }}
-
-
-
-
-    # stage: build
-    # image: maciekbaron/sgdk:latest
-    # script:
-    #   # Build the rom using SGDK
-    #   - make -f $GENDEV/sgdk/mkfiles/makefile.gen clean all
-    # artifacts:
-    #   paths:
-    #     # Save the result of the build (in our case, out/rom.bin)
-    #     - out/
-    # only:
-    #   refs:
-    #     - master
-    #     - merge_requests   
