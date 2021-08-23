@@ -31,13 +31,15 @@ jobs:
           image: maciekbaron/sgdk:latest
           options: --rm -v ${{ github.workspace }}:/src
           run: |
-            make -f /sgdk/makefile.gen 
+            make -f $GENDEV/sgdk/mkfiles/makefile.gen clean all 
 
       - name: ROM for Artifact
         uses: actions/upload-artifact@v2
         with:
          path: ${{ github.workspace }}\out\rom.bin
          name: ROM-${{ github.run_number }}
+
+
 
 
     # stage: build
