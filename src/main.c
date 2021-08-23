@@ -131,7 +131,7 @@ int main(u16 hard)
     XGM_setPCM(SFX_ROLL, sonic_roll_sfx, sizeof(sonic_roll_sfx));
     XGM_setPCM(SFX_STOP, sonic_stop_sfx, sizeof(sonic_stop_sfx));
     // start music
-    // XGM_startPlay(sonic_music);
+    XGM_startPlay(sonic_music);
 
     // init sprite engine with default parameters
     SPR_init();
