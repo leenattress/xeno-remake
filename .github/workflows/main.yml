@@ -1,41 +1,55 @@
-stages:
-  - build
-  - test
+# https://cezarypiatek.github.io/post/develop-vsextension-with-github-actions/
+# https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-command-line-reference?view=vs-2019
 
-build:
-  stage: build
-  image: maciekbaron/sgdk:latest
-  script:
-    # Build the rom using SGDK
-    - make -f $GENDEV/sgdk/mkfiles/makefile.gen clean all
-  artifacts:
-    paths:
-      # Save the result of the build (in our case, out/rom.bin)
-      - out/
-  only:
-    refs:
-      - master
-      - merge_requests
+name: CI
 
-test:
-  stage: test
-  image: maciekbaron/retroarch:latest
-  artifacts:
-    paths:
-      # Make sure we store the screenshot we are about to take
-      - screenshot.png
-  script:
-    # Initialise Xvfb
-    - Xvfb :1 -screen 0 1024x768x24 </dev/null &
-    - export DISPLAY=":1"
-    # Sleep 3 seconds to make sure Xvfb is running
-    - sleep 3
-    # Run retroarch using the Genesis Plus GX core on out/rom.bin
-    - /usr/bin/retroarch -L /usr/lib/x86_64-linux-gnu/libretro/genesis_plus_gx_libretro.so "out/rom.bin" &
-    - sleep 10
-    # Take a screenshot after 10 seconds
-    - import -display $DISPLAY -window root screenshot.png
-  only:
-    refs:
-      - master
-      - merge_requests
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest 
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - uses: addnab/docker-run-action@v3
+        with:
+          image: maciekbaron/sgdk:latest
+          options: --rm -v ${{ github.workspace }}:/src
+          run: |
+            make -f /sgdk/makefile.gen 
+
+      - name: ROM for Artifact
+        uses: actions/upload-artifact@v2
+        with:
+         path: ${{ github.workspace }}\out\rom.bin
+         name: ROM-${{ github.run_number }}
+
+
+    # stage: build
+    # image: maciekbaron/sgdk:latest
+    # script:
+    #   # Build the rom using SGDK
+    #   - make -f $GENDEV/sgdk/mkfiles/makefile.gen clean all
+    # artifacts:
+    #   paths:
+    #     # Save the result of the build (in our case, out/rom.bin)
+    #     - out/
+    # only:
+    #   refs:
+    #     - master
+    #     - merge_requests   
