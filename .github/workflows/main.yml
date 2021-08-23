@@ -1,31 +1,41 @@
-name: CI
+stages:
+  - build
+  - test
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+build:
+  stage: build
+  image: maciekbaron/sgdk:latest
+  script:
+    # Build the rom using SGDK
+    - make -f $GENDEV/sgdk/mkfiles/makefile.gen clean all
+  artifacts:
+    paths:
+      # Save the result of the build (in our case, out/rom.bin)
+      - out/
+  only:
+    refs:
+      - master
+      - merge_requests
 
-  workflow_dispatch:
-
-jobs:
-  build:
-    stage: build
-    image: maciekbaron/sgdk:latest
-    script:
-      # Build the rom using SGDK
-      - make -f $GENDEV/sgdk/mkfiles/makefile.gen clean all
-    artifacts:
-      paths:
-        # Save the result of the build (in our case, out/rom.bin)
-        - out/
-    only:
-      refs:
-        - master
-        - merge_requests    
-
-      # - name: ROM for Artifact
-      #   uses: actions/upload-artifact@v2
-      #   with:
-      #    path: ${{ github.workspace }}\out\rom.bin
-      #    name: ROM-${{ github.run_number }}
+test:
+  stage: test
+  image: maciekbaron/retroarch:latest
+  artifacts:
+    paths:
+      # Make sure we store the screenshot we are about to take
+      - screenshot.png
+  script:
+    # Initialise Xvfb
+    - Xvfb :1 -screen 0 1024x768x24 </dev/null &
+    - export DISPLAY=":1"
+    # Sleep 3 seconds to make sure Xvfb is running
+    - sleep 3
+    # Run retroarch using the Genesis Plus GX core on out/rom.bin
+    - /usr/bin/retroarch -L /usr/lib/x86_64-linux-gnu/libretro/genesis_plus_gx_libretro.so "out/rom.bin" &
+    - sleep 10
+    # Take a screenshot after 10 seconds
+    - import -display $DISPLAY -window root screenshot.png
+  only:
+    refs:
+      - master
+      - merge_requests
