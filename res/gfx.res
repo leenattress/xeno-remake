@@ -1,11 +1,7 @@
-// IMAGE bgb_image_old "gfx/bgb.png" BEST
-// IMAGE bga_image_old "gfx/bga.png" BEST
+PALETTE palette_arena "gfx/arena.png"
+PALETTE palette_players "sprite/reticule.png"
 
-PALETTE palette_all "gfx/S1_GHZ1_FG.png"
+TILESET arena_tileset "gfx/arena.png" BEST ALL
 
-TILESET bga_tileset "gfx/S1_GHZ1_FG.png" BEST ALL
-TILESET bgb_tileset "gfx/S1_GHZ1_BG.png" BEST ALL
-
-MAP bga_map "gfx/S1_GHZ1_FG.png" bga_tileset BEST 0
-MAP bgb_map "gfx/S1_GHZ1_BG.png" bgb_tileset BEST 0
+MAP arena_map "gfx/arena.png" arena_tileset BEST 0
 
