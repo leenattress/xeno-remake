@@ -34,8 +34,8 @@ jobs:
         run: docker build -t sgdk .
         working-directory: ./SGDK
       
-      - name: List
-        run: ls 
+      - name: Source folder
+        run: echo ${pwd}:/src 
 
       - name: Build
         run: docker run --rm -v ${pwd}:/src sgdk       
