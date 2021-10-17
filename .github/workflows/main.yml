@@ -43,5 +43,5 @@ jobs:
       - name: ROM for Artifact
         uses: actions/upload-artifact@v2
         with:
-         path: ${{ github.workspace }}\out\rom.bin
-         name: ROM-${{ github.run_number }}
+         path: ${{ github.workspace }}/out/rom.bin
+         name: XENO-ROM-${{ github.run_number }}
