@@ -1,44 +1,44 @@
-# # https://cezarypiatek.github.io/post/develop-vsextension-with-github-actions/
-# # https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-command-line-reference?view=vs-2019
+# https://cezarypiatek.github.io/post/develop-vsextension-with-github-actions/
+# https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-command-line-reference?view=vs-2019
 
-# name: CI
+name: CI
 
-# # Controls when the action will run. 
-# on:
-#   # Triggers the workflow on push or pull request events but only for the master branch
-#   push:
-#     branches: [ master ]
-#   pull_request:
-#     branches: [ master ]
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
-#   # Allows you to run this workflow manually from the Actions tab
-#   workflow_dispatch:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
-# # A workflow run is made up of one or more jobs that can run sequentially or in parallel
-# jobs:
-#   # This workflow contains a single job called "build"
-#   build:
-#     # The type of runner that the job will run on
-#     runs-on: ubuntu-latest    
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest    
 
-#     # Steps represent a sequence of tasks that will be executed as part of the job
-#     steps:
-#       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-#       - uses: actions/checkout@v2
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
       
-#       # Prepare
-#       - name: Fetch SGDK
-#         run: git clone https://github.com/Stephane-D/SGDK.git
+      # Prepare
+      - name: Fetch SGDK
+        run: git clone https://github.com/Stephane-D/SGDK.git
 
-#       - name: Create SGDK docker image
-#         run: docker build -t sgdk .
-#         working-directory: ./SGDK
+      - name: Create SGDK docker image
+        run: docker build -t sgdk .
+        working-directory: ./SGDK
       
-#       - name: Build
-#         run: docker run --rm -v ${pwd}:/src sgdk       
+      - name: Build
+        run: docker run --rm -v ${pwd}:/src sgdk       
 
-#       - name: ROM for Artifact
-#         uses: actions/upload-artifact@v2
-#         with:
-#          path: ${{ github.workspace }}\out\rom.bin
-#          name: ROM-${{ github.run_number }}
+      - name: ROM for Artifact
+        uses: actions/upload-artifact@v2
+        with:
+         path: ${{ github.workspace }}\out\rom.bin
+         name: ROM-${{ github.run_number }}

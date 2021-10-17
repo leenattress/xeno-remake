@@ -5,45 +5,20 @@
 #include "sound.h"
 #include "dma.h"
 
-#define RETICULE_READY      0
-#define RETICULE_CHARGING   1
-
-#define RETICULE_ACCEL      FIX32(1L)
-#define RETICULE_SPEED_MAX  FIX32(5L)
-#define RETICULE_BRAKING    FIX32(1L)
-
-#define BALL_SPEED_MAX      FIX32(16L)
-
-#define BALL_FRICTION       FIX32(6L)
-#define PUCK_FRICTION       FIX32(2L)
-
-#define MAP_TILE_SIZE       8
-#define MAP_WIDTH           1360
-#define MAP_HEIGHT          384
-#define MAP_WIDTH_TILES     (MAP_WIDTH / MAP_TILE_SIZE)
-#define MAP_HEIGHT_TILES    (MAP_HEIGHT / MAP_TILE_SIZE)
-
-#define MIN_POSX            FIX32(32L)
-#define MAX_POSX            FIX32(MAP_WIDTH - 32)
-#define MIN_POSY            FIX32(32L)
-#define MAX_POSY            FIX32(MAP_HEIGHT - 32)
-
+#include "vars.h"
+#include "utils.h"
+#include "entities.h"
 
 // forward
 static void handleInput();
 static void joyEvent(u16 joy, u16 changed, u16 state);
-
-static void setSpritePosition(Sprite* sprite, s16 posX, s16 posY);
-
+static void setSpritePosition(Sprite *sprite, s16 posX, s16 posY);
 static void updatePhysic();
 static void updateAnim();
-
 static void updateCameraPosition();
 static void setCameraPosition(s16 x, s16 y);
-
-static void updateMap(VDPPlane plane, Map* map, s16 xt, s16 yt);
+static void updateMap(VDPPlane plane, Map *map, s16 xt, s16 yt);
 static void updateVDPScroll();
-
 //static void frameChanged(Sprite* sprite);
 
 // used for alternate map update mode
@@ -51,11 +26,25 @@ u16 tilemapBuf[MAP_WIDTH_TILES * MAP_HEIGHT_TILES];
 u16 bufOffset;
 
 // sprites
-Sprite* reticuleA;
-// Sprite* reticule2;
-// Sprite* puck1;
-// Sprite* puck2;
+// Sprite *reticuleASprite;
+// Sprite *reticuleBSprite;
+// Sprite *puckASprite;
+// Sprite *puckBSprite;
 // Sprite* ball;
+
+int gamestate = GS_GAME;
+int i;
+
+// actors
+// two reticules, two pucks, one ball
+Entity actorsReticuleA;
+Entity actorsReticuleB;
+Entity actorsPuckA;
+Entity actorsPuckB;
+// Entity actorsBall;
+
+//actorsBall = {0, 0, 32, 32, 0, 0, 0, 1, SLEEPING, ENT_TYPE_PUCK, CTRL_NONE, FALSE, "PLAYER"};
+//Entity reticuleB = {0, 0, 32, 32, 0, 0, 0, 1, SLEEPING, ENT_TYPE_PUCK, CTRL_NONE, FALSE, "PLAYER"};
 
 // maps (BGA and BGB) position (tile) for alternate method
 s16 mapMetaTilePosX[2];
@@ -77,12 +66,11 @@ fix32 movY;
 s16 xOrder;
 s16 yOrder;
 
-// maintain X button to use alternate MAP update mode
 bool alternateScrollMethod;
 bool paused;
 
 // animation index table for enemies (static VRAM loading)
-u16** sprTileIndexes[2];
+u16 **sprTileIndexes[2];
 // BG start tile index
 u16 bgBaseTileIndex[2];
 
@@ -92,6 +80,69 @@ u16 bgBaseTileIndex[2];
 #include "reticule.h"
 #include "sprites.h"
 
+void init_actors()
+{
+    // ball
+    // actorsBall.x = 0;
+    // actorsBall.y = 0;
+    // actorsBall.w = 32;
+    // actorsBall.h = 32;
+    // actorsBall.active = ACTIVE;
+    // actorsBall.sprite = SPR_addSprite(
+    //     &ballSprite,
+    //     actorsBall.x >> BITSHIFT,
+    //     actorsBall.y >> BITSHIFT,
+    //     TILE_ATTR(PAL1, 0, FALSE, FALSE));
+
+    // reticule A
+    actorsReticuleA.x = 0;
+    actorsReticuleA.y = 0;
+    actorsReticuleA.w = 32;
+    actorsReticuleA.h = 32;
+    actorsReticuleA.active = ACTIVE;
+    actorsReticuleA.sprite = SPR_addSprite(
+        &reticule_a,
+        actorsReticuleA.x >> BITSHIFT,
+        actorsReticuleA.y >> BITSHIFT,
+        TILE_ATTR(PAL1, 0, FALSE, FALSE));
+
+    // reticule B
+    actorsReticuleB.x = 0;
+    actorsReticuleB.y = 0;
+    actorsReticuleB.w = 32;
+    actorsReticuleB.h = 32;
+    actorsReticuleB.active = ACTIVE;
+    actorsReticuleB.sprite = SPR_addSprite(
+        &reticule_b,
+        actorsReticuleB.x >> BITSHIFT,
+        actorsReticuleB.y >> BITSHIFT,
+        TILE_ATTR(PAL1, 0, FALSE, FALSE));
+
+    // puck A
+    actorsPuckA.x = 0;
+    actorsPuckA.y = 0;
+    actorsPuckA.w = 32;
+    actorsPuckA.h = 32;
+    actorsPuckA.active = ACTIVE;
+    actorsPuckA.sprite = SPR_addSprite(
+        &puck_a,
+        actorsPuckA.x >> BITSHIFT,
+        actorsPuckA.y >> BITSHIFT,
+        TILE_ATTR(PAL1, 0, FALSE, FALSE));
+
+    // puck B
+    actorsPuckB.x = 0;
+    actorsPuckB.y = 0;
+    actorsPuckB.w = 32;
+    actorsPuckB.h = 32;
+    actorsPuckB.active = ACTIVE;
+    actorsPuckB.sprite = SPR_addSprite(
+        &puck_b,
+        actorsPuckB.x >> BITSHIFT,
+        actorsPuckB.y >> BITSHIFT,
+        TILE_ATTR(PAL1, 0, FALSE, FALSE));
+}
+
 int main(u16 hard)
 {
     u16 palette[64];
@@ -100,12 +151,13 @@ int main(u16 hard)
 
     // initialization
     VDP_setScreenWidth320();
+    VDP_setScreenHeight240();
 
     // init sprite engine with default parameters
     SPR_init();
 
     // set all palette to black
-    VDP_setPaletteColors(0, (u16*) palette_black, 64);
+    VDP_setPaletteColors(0, (u16 *)palette_black, 64);
 
     // load background tilesets in VRAM
     ind = TILE_USERINDEX;
@@ -116,14 +168,14 @@ int main(u16 hard)
     // initialize variables
     bufOffset = 0;
 
-    alternateScrollMethod = FALSE;          // by default we use the easy MAP_scrollTo(..) method
+    alternateScrollMethod = FALSE; // by default we use the easy MAP_scrollTo(..) method
     paused = FALSE;
 
     // BGB/BGA tile position (force refresh)
     mapMetaTilePosX[0] = -42;
     mapMetaTilePosY[0] = 0;
-    mapMetaTilePosX[1] = -42;
-    mapMetaTilePosY[1] = 0;
+    // mapMetaTilePosX[1] = -42;
+    // mapMetaTilePosY[1] = 0;
     // camera position (force refresh)
     camPosX = -1;
     camPosY = -1;
@@ -159,24 +211,32 @@ int main(u16 hard)
     // can restore default DMA buffer size
     DMA_setBufferSizeToDefault();
 
-    // init sonic sprite
-    reticuleA = SPR_addSprite(&reticule, fix32ToInt(posX) - camPosX, fix32ToInt(posY) - camPosY, TILE_ATTR(PAL1, TRUE, FALSE, FALSE));
+    // old sprite init
+    // reticuleASprite = SPR_addSprite(&reticule_a, fix32ToInt(posX) - camPosX, fix32ToInt(posY) - camPosY, TILE_ATTR(PAL1, TRUE, FALSE, FALSE));
+    // reticuleBSprite = SPR_addSprite(&reticule_b, fix32ToInt(posX) - camPosX, fix32ToInt(posY) - camPosY, TILE_ATTR(PAL1, TRUE, FALSE, FALSE));
+    // puckASprite = SPR_addSprite(&puck_b, fix32ToInt(posX) - camPosX, fix32ToInt(posY) - camPosY, TILE_ATTR(PAL1, TRUE, FALSE, FALSE));
+    // puckBSprite = SPR_addSprite(&puck_b, fix32ToInt(posX) - camPosX, fix32ToInt(posY) - camPosY, TILE_ATTR(PAL1, TRUE, FALSE, FALSE));
+    // ballSprite = SPR_addSprite(&ball, fix32ToInt(posX) - camPosX, fix32ToInt(posY) - camPosY, TILE_ATTR(PAL1, TRUE, FALSE, FALSE));
+
+    init_actors();
 
     SPR_update();
 
     // prepare palettes
     memcpy(&palette[0], palette_arena.data, 16);
-    memcpy(&palette[16], palette_players.data, 16);
+    memcpy(&palette[16], reticule_a.palette->data, 32);
+    // VDP_setPalette(PAL0, palette_arena.data);
+    // VDP_setPalette(PAL1, reticule_a.palette -> data);
 
     // fade in
-    PAL_fadeIn(0, (4 * 16) - 1, palette, 20, FALSE);
+    PAL_fadeIn(0, 63, palette, 30, FALSE);
 
     JOY_setEventHandler(joyEvent);
 
     // just to monitor frame CPU usage
     SYS_showFrameLoad(TRUE);
 
-    while(TRUE)
+    while (TRUE)
     {
         handleInput();
 
@@ -221,6 +281,5 @@ static void updatePhysic()
     updateCameraPosition();
 
     // set sprites position
-    setSpritePosition(reticuleA, fix32ToInt(posX) - camPosX, fix32ToInt(posY) - camPosY);
+    setSpritePosition(actorsReticuleA.sprite, fix32ToInt(posX) - camPosX, fix32ToInt(posY) - camPosY);
 }
-
