@@ -27,7 +27,7 @@ jobs:
       - uses: actions/checkout@v2
           
       - name: Source folder
-        run: echo ${pwd}:/src 
+        run: echo ${{ github.workspace }}:/src 
 
       # Prepare
       - name: Fetch SGDK
@@ -38,7 +38,7 @@ jobs:
         working-directory: ./SGDK
 
       - name: Build
-        run: docker run --rm -v ${pwd}:/src sgdk       
+        run: docker run --rm -v ${{ github.workspace }}:/src sgdk       
 
       - name: ROM for Artifact
         uses: actions/upload-artifact@v2
