@@ -25,7 +25,10 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      
+          
+      - name: Source folder
+        run: echo ${pwd}:/src 
+
       # Prepare
       - name: Fetch SGDK
         run: git clone https://github.com/Stephane-D/SGDK.git
@@ -33,9 +36,6 @@ jobs:
       - name: Create SGDK docker image
         run: docker build -t sgdk .
         working-directory: ./SGDK
-      
-      - name: Source folder
-        run: echo ${pwd}:/src 
 
       - name: Build
         run: docker run --rm -v ${pwd}:/src sgdk       
